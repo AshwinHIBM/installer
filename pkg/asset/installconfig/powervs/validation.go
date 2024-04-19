@@ -138,6 +138,11 @@ func validatePreExistingPrivateDNS(fldPath *field.Path, client API, ic *types.In
 		if len(records) != 0 {
 			allErrs = append(allErrs, field.Duplicate(fldPath, fmt.Sprintf("record %s already exists in DNS zone (%s) and might be in use by another cluster, please remove it to continue", recordName, zoneID)))
 		}
+
+		// cluster name + cluster domain + base domain must not be greater than 32 characters.
+		if len(recordName+ic.BaseDomain) > 32 {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("DNSRecord"), nil, "cluster name is too long."))
+		}
 	}
 	return allErrs
 }
