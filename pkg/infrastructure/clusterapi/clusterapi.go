@@ -43,9 +43,6 @@ import (
 var _ infrastructure.Provider = (*InfraProvider)(nil)
 
 const (
-	// timeout for each provisioning step.
-	timeout = 15 * time.Minute
-
 	preProvisionStage        = "Infrastructure Pre-provisioning"
 	infrastructureStage      = "Network-infrastructure Provisioning"
 	infrastructureReadyStage = "Post-network, pre-machine Provisioning"
@@ -100,6 +97,16 @@ func (i *InfraProvider) Provision(ctx context.Context, dir string, parents asset
 		capiMachinesAsset,
 		tfvarsAsset,
 	)
+
+	// timeout for each provisioning step.
+	timeout := 15 * time.Minute
+	if _, set := os.LookupEnv("OPENSHIFT_INSTALL_TIMEOUT_MINUTES"); set == true {
+		duration, err := time.ParseDuration(os.Getenv("OPENSHIFT_INSTALL_TIMEOUT_MINUTES") + "m")
+		if err != nil {
+			logrus.Warn("Provided timeout %s is invalid, using default 15 minutes as timeout.", os.Getenv("OPENSHIFT_INSTALL_TIMEOUT_MINUTES"))
+		}
+		timeout = duration
+	}
 
 	// Collect cluster and non-machine-related infra manifests
 	// to be applied during the initial stage.
