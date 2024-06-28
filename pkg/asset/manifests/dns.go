@@ -6,10 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/pkg/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/yaml"
-
+	"github.com/IBM-Cloud/bluemix-go/crn"
 	configv1 "github.com/openshift/api/config/v1"
 	"github.com/openshift/installer/pkg/asset"
 	"github.com/openshift/installer/pkg/asset/installconfig"
@@ -30,6 +27,9 @@ import (
 	ovirttypes "github.com/openshift/installer/pkg/types/ovirt"
 	powervstypes "github.com/openshift/installer/pkg/types/powervs"
 	vspheretypes "github.com/openshift/installer/pkg/types/vsphere"
+	"github.com/pkg/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/yaml"
 )
 
 var (
@@ -196,6 +196,22 @@ func (d *DNS) GenerateWithContext(ctx context.Context, dependencies asset.Parent
 		}
 
 		zoneID, err := client.GetDNSZoneIDByName(ctx, installConfig.Config.BaseDomain, installConfig.Config.Publish)
+		if err != nil {
+			vpc, err := client.GetVPCByName(ctx, installConfig.Config.Platform.PowerVS.VPCName)
+			if err != nil {
+				return fmt.Errorf("failed to find VPC by name: %w", err)
+			}
+			dnsInstanceCRN, err1 := client.GetInstanceCRNByName(ctx, installConfig.Config.BaseDomain, types.InternalPublishingStrategy)
+			if err1 != nil {
+				return err1
+			}
+			dnsCRN, err := crn.Parse(dnsInstanceCRN)
+			err = client.AddVPCToPermittedNetworks(ctx, *vpc.CRN, dnsCRN.ServiceInstance, zoneID)
+			if err != nil {
+				return fmt.Errorf("failed to add permitted network: %w", err)
+			}
+		}
+		zoneID, err = client.GetDNSZoneIDByName(ctx, installConfig.Config.BaseDomain, installConfig.Config.Publish)
 		if err != nil {
 			return errors.Wrap(err, "failed to get DNS zone ID")
 		}
