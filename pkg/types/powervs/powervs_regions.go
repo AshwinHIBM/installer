@@ -42,7 +42,7 @@ var Regions = map[string]Region{
 		Description: "London, UK",
 		VPCRegion:   "eu-gb",
 		COSRegion:   "eu-gb",
-		Zones:       []string{"lon06"},
+		Zones:       []string{"lon04", "lon06"},
 		SysTypes:    []string{"s922", "e980"},
 		VPCZones:    []string{"eu-gb-1", "eu-gb-2", "eu-gb-3"},
 	},
