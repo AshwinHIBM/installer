@@ -507,13 +507,11 @@ spec:
                               type: integer
                             diskType:
                               description: DiskType defines the type of disk. For
-                                control plane nodes, the valid values are pd-balanced,
-                                pd-ssd, and hyperdisk-balanced.
+                                control plane nodes, the valid value is pd-ssd.
                               enum:
                               - pd-balanced
                               - pd-ssd
                               - pd-standard
-                              - hyperdisk-balanced
                               type: string
                             encryptionKey:
                               description: EncryptionKey defines the KMS key to be
@@ -1417,13 +1415,11 @@ spec:
                             type: integer
                           diskType:
                             description: DiskType defines the type of disk. For control
-                              plane nodes, the valid values are pd-balanced, pd-ssd,
-                              and hyperdisk-balanced.
+                              plane nodes, the valid value is pd-ssd.
                             enum:
                             - pd-balanced
                             - pd-ssd
                             - pd-standard
-                            - hyperdisk-balanced
                             type: string
                           encryptionKey:
                             description: EncryptionKey defines the KMS key to be used
@@ -3051,13 +3047,11 @@ spec:
                             type: integer
                           diskType:
                             description: DiskType defines the type of disk. For control
-                              plane nodes, the valid values are pd-balanced, pd-ssd,
-                              and hyperdisk-balanced.
+                              plane nodes, the valid value is pd-ssd.
                             enum:
                             - pd-balanced
                             - pd-ssd
                             - pd-standard
-                            - hyperdisk-balanced
                             type: string
                           encryptionKey:
                             description: EncryptionKey defines the KMS key to be used
@@ -4262,6 +4256,10 @@ spec:
                       instance created from the IBM Cloud Catalog before the cluster
                       is completed.  Leave unset to allow the installer to create
                       a service instance during cluster creation.
+                    type: string
+                  tgName:
+                    description: TGName is the name of a pre-created TransitGateway
+                      inside IBM Cloud.
                     type: string
                   userID:
                     description: UserID is the login for the user's IBM Cloud account.
