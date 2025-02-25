@@ -8,6 +8,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
+	"github.com/IBM-Cloud/bluemix-go/crn"
 	"github.com/openshift/installer/pkg/asset"
 	"github.com/openshift/installer/pkg/asset/installconfig/aws"
 	icazure "github.com/openshift/installer/pkg/asset/installconfig/azure"
@@ -153,6 +154,30 @@ func (a *InstallConfig) finish(ctx context.Context, filename string) error {
 	}
 	if a.Config.PowerVS != nil {
 		a.PowerVS = icpowervs.NewMetadata(a.Config)
+		var err error
+		client, err := icpowervs.NewClient()
+		if err != nil {
+			return err
+		}
+		var zoneID string
+		zoneID, err = client.GetDNSZoneIDByName(context.TODO(), a.Config.BaseDomain, types.InternalPublishingStrategy)
+		if err != nil {
+			return err
+		}
+		var dnsInstanceCRN string
+		dnsInstanceCRN, err = a.PowerVS.DNSInstanceCRN(context.TODO())
+		if err != nil {
+			return err
+		}
+		var dnsCRN crn.CRN
+		dnsCRN, err = crn.Parse(dnsInstanceCRN)
+		if err != nil {
+			return err
+		}
+		a.Config.PowerVS.VPCName, err = icpowervs.GetPermittedNetwork(zoneID, dnsCRN, a.Config.Platform.PowerVS.Region)
+		if err != nil {
+			return err
+		}
 	}
 	if a.Config.VSphere != nil {
 		a.VSphere = icvsphere.NewMetadata()
