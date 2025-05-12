@@ -47,7 +47,6 @@ type Metadata struct {
 	cisInstanceCRN string
 	dnsInstanceCRN string
 	sessionClient  *Client
-	StorageTier    string
 
 	mutex sync.Mutex
 }

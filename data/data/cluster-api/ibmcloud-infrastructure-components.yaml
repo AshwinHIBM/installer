@@ -2311,7 +2311,6 @@ spec:
                 enum:
                 - tier0
                 - tier1
-                - tier2
                 - tier3
                 type: string
             required:
@@ -2480,7 +2479,6 @@ spec:
                 enum:
                 - tier0
                 - tier1
-                - tier2
                 - tier3
                 type: string
             required:
