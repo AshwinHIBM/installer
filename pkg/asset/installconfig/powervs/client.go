@@ -395,10 +395,10 @@ func (c *Client) GetDNSZones(ctx context.Context, publish types.PublishingStrate
 			}
 
 			options := zonesService.NewListZonesOptions()
-			listZonesResponse, _, err := zonesService.ListZones(options)
+			listZonesResponse, _, _ := zonesService.ListZones(options)
 
 			if listZonesResponse == nil {
-				return nil, err
+				continue
 			}
 
 			for _, zone := range listZonesResponse.Result {
