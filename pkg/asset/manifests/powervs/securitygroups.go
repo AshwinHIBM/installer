@@ -136,7 +136,7 @@ func getVPCSecurityGroups(infraID string, publishStrategy types.PublishingStrate
 	// securityGroups = append(securityGroups, buildClusterWideSecurityGroup(infraID, allSubnets))
 	// securityGroups = append(securityGroups, buildOpenshiftNetSecurityGroup(infraID, allSubnets))
 	// securityGroups = append(securityGroups, buildKubeAPILBSecurityGroup(infraID))
-	// securityGroups = append(securityGroups, buildControlPlaneSecurityGroup(infraID))
+	securityGroups = append(securityGroups, buildControlPlaneSecurityGroup(infraID))
 	securityGroups = append(securityGroups, buildCPInternalSecurityGroup(infraID))
 
 	// Generate the bootstrap SG.
