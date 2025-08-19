@@ -69,7 +69,7 @@ func GenerateClusterAssets(installConfig *installconfig.InstallConfig, clusterID
 		logrus.Infof("Warning: %d machineNetwork found! Ignoring all except the first.", numNetworks)
 	}
 	logrus.Debugf("GenerateClusterAssets: dhcpSubnet = %s", dhcpSubnet)
-	vpcSecurityGroups := getVPCSecurityGroups(clusterID.InfraID, installConfig.Config.Publish)
+	vpcSecurityGroups := getVPCSecurityGroups(clusterID.InfraID, powerVSCluster.Spec.VPCSubnets, installConfig.Config.Publish)
 	if installConfig.Config.PowerVS.ServiceInstanceGUID == "" {
 		serviceName := fmt.Sprintf("%s-power-iaas", clusterID.InfraID)
 
