@@ -134,7 +134,13 @@ func GenerateClusterAssets(installConfig *installconfig.InstallConfig, clusterID
 			return nil, fmt.Errorf("generateClusterAssets could not handle vpc")
 		}
 	}
-
+	vpcSecurityGroups := getVPCSecurityGroups(clusterID.InfraID)
+	loadBalancerSecurityGroups := []capibm.VPCResource{
+		{
+			Name: ptr.To(fmt.Sprintf("%s-%s", clusterID.InfraID, kubeAPILBSGNameSuffix)),
+		},
+	}
+	logrus.Debugf("Load balancer security group name is %v ", loadBalancerSecurityGroups[0].Name)
 	// The Transit Gateway can be either:
 	// 1) blank - CAPI will create one for us.
 	// 2) an id of an existing TG.
@@ -192,8 +198,9 @@ func GenerateClusterAssets(installConfig *installconfig.InstallConfig, clusterID
 			ResourceGroup: &capibm.IBMPowerVSResourceReference{
 				Name: &installConfig.Config.Platform.PowerVS.PowerVSResourceGroup,
 			},
-			VPC:            vpcResourceRef,
-			TransitGateway: transitGateway,
+			VPC:               vpcResourceRef,
+			VPCSecurityGroups: vpcSecurityGroups,
+			TransitGateway:    transitGateway,
 			LoadBalancers: []capibm.VPCLoadBalancerSpec{
 				{
 					Name:   fmt.Sprintf("%s-loadbalancer", clusterID.InfraID),
@@ -207,6 +214,7 @@ func GenerateClusterAssets(installConfig *installconfig.InstallConfig, clusterID
 						//	Port: 6443,
 						// },
 					},
+					SecurityGroups: loadBalancerSecurityGroups,
 				},
 				{
 					Name:   fmt.Sprintf("%s-loadbalancer-int", clusterID.InfraID),

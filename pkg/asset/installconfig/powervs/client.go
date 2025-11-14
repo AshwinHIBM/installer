@@ -80,7 +80,9 @@ type API interface {
 	ServiceInstanceNameToGUID(ctx context.Context, name string) (string, error)
 
 	// Security Group
+	ListSecurityGroups(ctx context.Context, vpcID string, region string) ([]vpcv1.SecurityGroup, error)
 	ListSecurityGroupRules(ctx context.Context, securityGroupID string) (*vpcv1.SecurityGroupRuleCollection, error)
+	AttachResourceToSecurityGroup(ctx context.Context, lbID *string, sgID *string) error
 	AddSecurityGroupRule(ctx context.Context, securityGroupID string, rule *vpcv1.SecurityGroupRulePrototype) error
 
 	// SSH
@@ -1280,6 +1282,42 @@ func (c *Client) getTransitConnections(ctx context.Context, tgID string) ([]tran
 	return result, nil
 }
 
+func (c *Client) ListSecurityGroups(ctx context.Context, vpcID string, region string) ([]vpcv1.SecurityGroup, error) {
+	var groupID string
+	localContext, cancel := context.WithTimeout(ctx, 1*time.Minute)
+	defer cancel()
+	groups, err := c.ListResourceGroups(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list resource groups: %w", err)
+	}
+
+	err = c.SetVPCServiceURLForRegion(ctx, region)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, group := range groups.Resources {
+		if *group.Name == c.BXCli.PowerVSResourceGroup {
+			groupID = *group.ID
+		}
+	}
+	listSecurityGroupOptions := c.vpcAPI.NewListSecurityGroupsOptions()
+	listSecurityGroupOptions.SetVPCID(vpcID)
+	listSecurityGroupOptions.SetResourceGroupID(groupID)
+	securityGroupsPager, err := c.vpcAPI.NewSecurityGroupsPager(listSecurityGroupOptions)
+	if err != nil {
+		return nil, fmt.Errorf("failed creating pager for security group lookup: %w", err)
+	}
+	securityGroups, err := securityGroupsPager.GetAllWithContext(localContext)
+	if err != nil {
+		return nil, fmt.Errorf("failed collecting all security groups with pager: %w", err)
+	}
+	for _, sg := range securityGroups {
+		logrus.Debugf("SG Name %v found", *sg.Name)
+	}
+	return securityGroups, nil
+}
+
 // ListSecurityGroupRules returns a list of the security group rules.
 func (c *Client) ListSecurityGroupRules(ctx context.Context, securityGroupID string) (*vpcv1.SecurityGroupRuleCollection, error) {
 	logrus.Debugf("ListSecurityGroupRules: securityGroupID = %s", securityGroupID)
@@ -1401,6 +1439,18 @@ func (c *Client) CreateSSHKey(ctx context.Context, serviceInstance string, zone 
 		return fmt.Errorf("createSSHKey: failed to create the ssh key %w", err)
 	}
 
+	return nil
+}
+func (c *Client) AttachResourceToSecurityGroup(ctx context.Context, lbID *string, sgID *string) error {
+	createSecurityGroupTargetBindingOptions := &vpcv1.CreateSecurityGroupTargetBindingOptions{}
+	logrus.Debugf("sgID is %v", *sgID)
+	logrus.Debugf("lbID is %v", *lbID)
+	createSecurityGroupTargetBindingOptions.SecurityGroupID = sgID
+	createSecurityGroupTargetBindingOptions.ID = lbID
+	_, _, err := c.vpcAPI.CreateSecurityGroupTargetBindingWithContext(ctx, createSecurityGroupTargetBindingOptions)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
