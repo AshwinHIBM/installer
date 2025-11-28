@@ -66,7 +66,7 @@ func (p Provider) NetworkTimeout() time.Duration {
 // ProvisionTimeout allows platform provider to override the timeout
 // when waiting for the machines to provision.
 func (p Provider) ProvisionTimeout() time.Duration {
-	return 15 * time.Minute
+	return 60 * time.Minute
 }
 
 // InfraReady is called once cluster.Status.InfrastructureReady

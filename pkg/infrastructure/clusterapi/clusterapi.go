@@ -209,7 +209,7 @@ func (i *InfraProvider) Provision(ctx context.Context, dir string, parents asset
 		}
 	}
 
-	var networkTimeout = 15 * time.Minute
+	var networkTimeout = 60 * time.Minute
 
 	if p, ok := i.impl.(Timeouts); ok {
 		networkTimeout = p.NetworkTimeout()
@@ -334,7 +334,7 @@ func (i *InfraProvider) Provision(ctx context.Context, dir string, parents asset
 		logrus.Infof("Created manifest %+T, namespace=%s name=%s", m, m.GetNamespace(), m.GetName())
 	}
 
-	var provisionTimeout = 15 * time.Minute
+	var provisionTimeout = 60 * time.Minute
 
 	if p, ok := i.impl.(Timeouts); ok {
 		provisionTimeout = p.ProvisionTimeout()
