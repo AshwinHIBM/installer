@@ -11,6 +11,7 @@ import (
 
 	"github.com/openshift/installer/pkg/types"
 	powervstypes "github.com/openshift/installer/pkg/types/powervs"
+	"github.com/sirupsen/logrus"
 )
 
 // Validate executes platform specific validation/
@@ -162,6 +163,7 @@ func ValidateCustomVPCSetup(client API, ic *types.InstallConfig) error {
 	}
 
 	if vpcName != "" {
+		logrus.Debugf("VPC name is not nil")
 		allErrs = append(allErrs, findVPCInRegion(client, vpcName, vpcRegion, fldPath)...)
 		allErrs = append(allErrs, findSubnetInVPC(client, ic.PowerVS.VPCSubnets, vpcRegion, vpcName, fldPath)...)
 	} else if len(ic.PowerVS.VPCSubnets) != 0 {
@@ -172,6 +174,7 @@ func ValidateCustomVPCSetup(client API, ic *types.InstallConfig) error {
 }
 
 func findVPCInRegion(client API, vpcNameOrID string, region string, path *field.Path) field.ErrorList {
+	logrus.Debugf("Inside findVPCInRegion")
 	allErrs := field.ErrorList{}
 
 	if vpcNameOrID == "" {
@@ -187,11 +190,12 @@ func findVPCInRegion(client API, vpcNameOrID string, region string, path *field.
 	}
 
 	for _, vpc := range vpcs {
+		logrus.Debugf("On VPC %w", *vpc.Name)
 		if *vpc.Name == vpcNameOrID || *vpc.ID == vpcNameOrID {
 			return allErrs
 		}
 	}
-
+	logrus.Debugf("No matching VPC found")
 	allErrs = append(allErrs, field.NotFound(path.Child("vpcName"), vpcNameOrID))
 
 	return allErrs
