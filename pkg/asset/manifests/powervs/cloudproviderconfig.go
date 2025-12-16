@@ -98,10 +98,13 @@ func CloudProviderConfig(infraID string, accountID string, vpcName string, regio
 		},
 	}
 	buf := &bytes.Buffer{}
+	logrus.Debugf("Attempting to parse cloud provider template")
 	template := template.Must(template.New("powervs cloudproviderconfig").Parse(configTmpl))
+	logrus.Debugf("Compiled cloud provider config template")
 	if err := template.Execute(buf, config); err != nil {
 		return "", err
 	}
+	logrus.Debugf("Template executed")
 	return buf.String(), nil
 }
 
