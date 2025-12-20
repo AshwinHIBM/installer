@@ -101,7 +101,6 @@ func (a *baseDomain) Generate(_ context.Context, parents asset.Parents) error {
 			for _, vpc := range vpcs {
 				vpcNamesList = append(vpcNamesList, *vpc.Name)
 			}
-			logrus.Debugf(vpcNamesList)
 			if err != nil {
 				return fmt.Errorf("failed to retrieve vpc Names", err)
 			}
