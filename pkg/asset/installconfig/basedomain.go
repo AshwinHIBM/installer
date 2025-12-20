@@ -2,6 +2,8 @@ package installconfig
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	survey "github.com/AlecAivazis/survey/v2"
 	"github.com/aws/aws-sdk-go-v2/aws/retry"
@@ -84,6 +86,39 @@ func (a *baseDomain) Generate(_ context.Context, parents asset.Parents) error {
 		}
 		a.BaseDomain = zone.Name
 		a.Publish = zone.Publish
+		if a.Publish == types.InternalPublishingStrategy {
+			client, err := powervsconfig.NewClient()
+			if err != nil {
+				return fmt.Errorf("failed to create client")
+			}
+			ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Minute)
+			defer cancel()
+			vpcNamesList := make([]string, 20)
+			vpcs, err := client.GetVPCs(ctx, client.BXCli.Region)
+			if err != nil {
+				return fmt.Errorf("failed to list vpcs")
+			}
+			for _, vpc := range vpcs {
+				vpcNamesList = append(vpcNamesList, *vpc.Name)
+			}
+			logrus.Debugf(vpcNamesList)
+			if err != nil {
+				return fmt.Errorf("failed to retrieve vpc Names", err)
+			}
+			err = survey.Ask([]*survey.Question{
+				{
+					Prompt: &survey.Select{
+						Message: "Cluster VPC",
+						Help:    "The VPC of the cluster. If you don't see your intended VPC listed, check whether the VPC belongs to the resource group selected and rerun the installer.",
+						Default: "",
+						Options: vpcNamesList,
+					},
+				},
+			}, &platform.PowerVS.VPC)
+			if err != nil {
+				return fmt.Errorf("survey.ask failed with: %w", err)
+			}
+		}
 		return nil
 	default:
 		//Do nothing
