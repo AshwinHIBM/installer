@@ -231,6 +231,7 @@ func GenerateClusterAssets(installConfig *installconfig.InstallConfig, clusterID
 			Ignition: &capibm.Ignition{
 				Version: "3.4",
 			},
+			NetworkSecurityGroup: &capibm.NetworkSecurityGroup{},
 		},
 	}
 
