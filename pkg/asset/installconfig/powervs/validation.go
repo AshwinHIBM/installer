@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"github.com/sirupsen/logrus"
 
 	"golang.org/x/crypto/ssh"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -165,6 +166,10 @@ func ValidateCustomVPCSetup(client API, ic *types.InstallConfig) error {
 
 	if vpcName != "" {
 		allErrs = append(allErrs, findVPCInRegion(client, vpcName, vpcRegion, fldPath)...)
+		logrus.Debugf("vpcName is not null")
+		if allErrs != nil {
+			logrus.Debugf("There is an error: %v", err)
+		}
 		allErrs = append(allErrs, findSubnetInVPC(client, ic.PowerVS.VPCSubnets, vpcRegion, vpcName, fldPath)...)
 	} else if len(ic.PowerVS.VPCSubnets) != 0 {
 		allErrs = append(allErrs, field.Invalid(fldPath.Child("vpcSubnets"), nil, "invalid without vpcName"))
