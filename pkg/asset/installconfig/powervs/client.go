@@ -52,6 +52,7 @@ type API interface {
 	GetPublicGatewayByVPC(ctx context.Context, vpcName string) (*vpcv1.PublicGateway, error)
 	SetVPCServiceURLForRegion(ctx context.Context, region string) error
 	GetVPCs(ctx context.Context, region string) ([]vpcv1.VPC, error)
+	GetVPCsInResourceGroup(ctx context.Context, resourceGroupID string, region string) ([]vpcv1.VPC, error)
 	GetVPCSubnets(ctx context.Context, vpcID string) ([]vpcv1.Subnet, error)
 
 	// TG
@@ -832,6 +833,26 @@ func (c *Client) GetVPCs(ctx context.Context, region string) ([]vpcv1.VPC, error
 	}
 
 	vpcs, _, err := c.vpcAPI.ListVpcs(c.vpcAPI.NewListVpcsOptions())
+	if err != nil {
+		return nil, err
+	}
+
+	return vpcs.Vpcs, nil
+}
+
+// GetVPCsInResourceGroup gets all VPCs in a region filtered by resource group ID.
+func (c *Client) GetVPCsInResourceGroup(ctx context.Context, resourceGroupID string, region string) ([]vpcv1.VPC, error) {
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Minute)
+	defer cancel()
+
+	err := c.SetVPCServiceURLForRegion(ctx, region)
+	if err != nil {
+		return nil, fmt.Errorf("failed to set vpc api service url: %w", err)
+	}
+
+	listVpcsOptions := c.vpcAPI.NewListVpcsOptions()
+	listVpcsOptions.SetResourceGroupID(resourceGroupID)
+	vpcs, _, err := c.vpcAPI.ListVpcs(listVpcsOptions)
 	if err != nil {
 		return nil, err
 	}
