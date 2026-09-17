@@ -15,7 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/utils/ptr"
-	capibm "sigs.k8s.io/cluster-api-provider-ibmcloud/api/v1beta2"
+	capibm "sigs.k8s.io/cluster-api-provider-ibmcloud/api/powervs/v1beta2"
 	crclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	powervsconfig "github.com/openshift/installer/pkg/asset/installconfig/powervs"

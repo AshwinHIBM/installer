@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"k8s.io/utils/ptr"
-	capibmcloud "sigs.k8s.io/cluster-api-provider-ibmcloud/api/v1beta2"
+	capibmcloud "sigs.k8s.io/cluster-api-provider-ibmcloud/api/vpc/v1beta2"
 
 	ibmcloudic "github.com/openshift/installer/pkg/asset/installconfig/ibmcloud"
 	"github.com/openshift/installer/pkg/types"

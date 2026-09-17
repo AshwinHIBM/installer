@@ -10,7 +10,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
-	capibm "sigs.k8s.io/cluster-api-provider-ibmcloud/api/v1beta2"
+	capibm "sigs.k8s.io/cluster-api-provider-ibmcloud/api/powervs/v1beta2"
 
 	"github.com/openshift/installer/pkg/asset"
 	"github.com/openshift/installer/pkg/asset/installconfig"

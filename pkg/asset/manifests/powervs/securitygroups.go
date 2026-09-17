@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"k8s.io/utils/ptr"
-	capibmcloud "sigs.k8s.io/cluster-api-provider-ibmcloud/api/v1beta2"
+	capibmcloud "sigs.k8s.io/cluster-api-provider-ibmcloud/api/powervs/v1beta2"
 )
 
 const (
