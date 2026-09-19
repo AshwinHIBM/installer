@@ -2,7 +2,7 @@ module openshift/installer/cluster-api/providers/ibmcloud
 
 go 1.25.8
 
-require sigs.k8s.io/cluster-api-provider-ibmcloud v0.12.2
+require sigs.k8s.io/cluster-api-provider-ibmcloud v0.15.0
 
 require (
 	cel.dev/expr v0.25.1 // indirect
@@ -123,7 +123,7 @@ require (
 	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff // indirect
 	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738 // indirect
 	sigs.k8s.io/apiserver-network-proxy/konnectivity-client v0.31.2 // indirect
-	sigs.k8s.io/cluster-api v1.11.8 // indirect
+	sigs.k8s.io/cluster-api v1.14.0 // indirect
 	sigs.k8s.io/controller-runtime v0.21.0 // indirect
 	sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect

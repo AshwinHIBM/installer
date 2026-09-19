@@ -123,13 +123,13 @@ require (
 	k8s.io/klog/v2 v2.140.0
 	k8s.io/utils v0.0.0-20260210185600-b8788abfbbc2
 	libvirt.org/go/libvirtxml v1.10002.0
-	sigs.k8s.io/cluster-api v1.13.4
+	sigs.k8s.io/cluster-api v1.14.0
 	sigs.k8s.io/cluster-api-provider-aws/v2 v2.12.1
 	sigs.k8s.io/cluster-api-provider-azure v1.24.2
 	sigs.k8s.io/cluster-api-provider-gcp v1.13.1-0.20260810150012-23049b61863d
-	sigs.k8s.io/cluster-api-provider-ibmcloud v0.13.1
+	sigs.k8s.io/cluster-api-provider-ibmcloud v0.15.0
 	sigs.k8s.io/cluster-api-provider-openstack v0.14.6
-	sigs.k8s.io/cluster-api-provider-vsphere v1.15.3
+	sigs.k8s.io/cluster-api-provider-vsphere v1.17.0
 	sigs.k8s.io/controller-runtime v0.24.1
 	sigs.k8s.io/controller-tools v0.19.0
 	sigs.k8s.io/json v0.0.0-20250730193827-2d320260d730

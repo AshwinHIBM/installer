@@ -2,9 +2,9 @@ module openshift/installer/cluster-api/providers/vsphere
 
 go 1.24.0
 
-require sigs.k8s.io/cluster-api-provider-vsphere v1.14.0
+require sigs.k8s.io/cluster-api-provider-vsphere v1.17.0
 
-require sigs.k8s.io/cluster-api v1.11.3 // indirect
+require sigs.k8s.io/cluster-api v1.14.0 // indirect
 
 replace github.com/vmware-tanzu/vm-operator/pkg/constants/testlabels => github.com/vmware-tanzu/vm-operator/pkg/constants/testlabels v0.0.0-20240404200847-de75746a9505
 
