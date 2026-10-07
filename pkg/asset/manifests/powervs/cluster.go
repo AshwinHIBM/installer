@@ -23,22 +23,22 @@ import (
 // GenerateClusterAssets generates the manifests for the cluster-api.
 func GenerateClusterAssets(installConfig *installconfig.InstallConfig, clusterID *installconfig.ClusterID) (*capiutils.GenerateClusterAssetsOutput, error) {
 	var (
-		manifests          []*asset.RuntimeFile
-		network            string
-		dhcpSubnet         string
-		service            capibm.IBMPowerVSResourceReference
-		vpcNameOrID        string
-		vpcStruct          *vpcv1.VPC
-		vpcRegion          string
-		cosName            string
-		cosRegion          string
-		bucketName         string
-		transitGatewayName string
-		client             *powervsconfig.Client
-		vpcResourceRef     *capibm.VPCResourceReference
-		transitGateway     *capibm.TransitGateway
-		err                error
-		powerVSCluster     *capibm.IBMPowerVSCluster
+		manifests            []*asset.RuntimeFile
+		dhcpSubnet           string
+		service              capibm.ResourceIdentifier
+		vpcNameOrID          string
+		vpcStruct            *vpcv1.VPC
+		vpcRegion            string
+		vpcSource            capibm.VPCSource
+		cosName              string
+		cosRegion            string
+		bucketName           string
+		transitGatewayName   string
+		client               *powervsconfig.Client
+		transitGatewaySource capibm.TransitGatewaySource
+		err                  error
+		powerVSCluster       *capibm.IBMPowerVSCluster
+		workspaceSource      capibm.WorkspaceSource
 	)
 
 	defer func() {
@@ -310,7 +310,14 @@ func GenerateClusterAssets(installConfig *installconfig.InstallConfig, clusterID
 		Object: powerVSCluster,
 		File:   asset.File{Filename: "02_powervs-cluster.yaml"},
 	})
-	logrus.Infof("Using PowerVS catalog image: %s", machinespowervs.OSImageNameFromStream(installConfig.Config.OSImageStream))
+	powerVSPlatform := installConfig.Config.Platform.PowerVS
+	var resolvedImage string
+	if powerVSPlatform.OSImage != "" && powerVSPlatform.ServiceInstanceGUID != "" {
+		resolvedImage = powerVSPlatform.OSImage
+	} else {
+		resolvedImage = machinespowervs.OSImageNameFromStream(installConfig.Config.OSImageStream)
+	}
+	logrus.Infof("Using PowerVS image: %s", resolvedImage)
 
 	return &capiutils.GenerateClusterAssetsOutput{
 		Manifests: manifests,

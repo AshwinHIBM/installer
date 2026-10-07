@@ -29,8 +29,14 @@ func GenerateMachines(clusterID string, ic *types.InstallConfig, pool *types.Mac
 		total = *pool.Replicas
 	}
 
-	// Resolve the catalog image name from osImageStream (defaults to RHEL-CoreOS-9).
-	image := OSImageNameFromStream(ic.OSImageStream)
+	// When both osImage and serviceInstanceGUID are specified in the install-config,
+	// use the caller-supplied image name directly; otherwise derive it from osImageStream.
+	var image string
+	if ic.PowerVS.OSImage != "" && ic.PowerVS.ServiceInstanceGUID != "" {
+		image = ic.PowerVS.OSImage
+	} else {
+		image = OSImageNameFromStream(ic.OSImageStream)
+	}
 
 	var (
 		result         []*asset.RuntimeFile
@@ -53,10 +59,12 @@ func GenerateMachines(clusterID string, ic *types.InstallConfig, pool *types.Mac
 		}
 	}
 
+	usingOSImage := ic.PowerVS.OSImage != "" && ic.PowerVS.ServiceInstanceGUID != ""
+
 	for idx := int64(0); idx < total; idx++ {
 		name = fmt.Sprintf("%s-%s-%d", clusterID, pool.Name, idx)
 
-		powerVSMachine = GenerateMachine(ic, service, mpool, name, image)
+		powerVSMachine = GenerateMachine(ic, service, mpool, name, image, usingOSImage)
 
 		result = append(result, &asset.RuntimeFile{
 			File:   asset.File{Filename: fmt.Sprintf("10_inframachine_%s.yaml", powerVSMachine.Name)},
@@ -73,7 +81,7 @@ func GenerateMachines(clusterID string, ic *types.InstallConfig, pool *types.Mac
 	}
 
 	name = fmt.Sprintf("%s-bootstrap", clusterID)
-	powerVSMachine = GenerateMachine(ic, service, mpool, name, image)
+	powerVSMachine = GenerateMachine(ic, service, mpool, name, image, usingOSImage)
 	powerVSMachine.Labels["install.openshift.io/bootstrap"] = ""
 
 	result = append(result, &asset.RuntimeFile{
@@ -94,7 +102,26 @@ func GenerateMachines(clusterID string, ic *types.InstallConfig, pool *types.Mac
 }
 
 // GenerateMachine creates a capibm.IBMPowerVSMachine struct.
-func GenerateMachine(ic *types.InstallConfig, service capibm.ResourceIdentifier, mpool *powervs.MachinePool, name string, image string) *capibm.IBMPowerVSMachine {
+// When imageIsReference is true (i.e. image comes from platform.powervs.osImage), the image
+// is resolved as an existing workspace image via ImageSourceTypeReference; otherwise the
+// catalog stock-image path is used.
+func GenerateMachine(ic *types.InstallConfig, service capibm.ResourceIdentifier, mpool *powervs.MachinePool, name string, image string, imageIsReference bool) *capibm.IBMPowerVSMachine {
+	var machineImage capibm.IBMPowerVSMachineImage
+	if imageIsReference {
+		machineImage = capibm.IBMPowerVSMachineImage{
+			Type: capibm.ImageSourceTypeReference,
+			Reference: capibm.ResourceIdentifier{
+				Name: image,
+			},
+		}
+	} else {
+		machineImage = capibm.IBMPowerVSMachineImage{
+			Type: capibm.ImageSourceTypeStockImage,
+			StockImage: capibm.ResourceIdentifier{
+				Name: image,
+			},
+		}
+	}
 	machine := &capibm.IBMPowerVSMachine{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: capibm.GroupVersion.String(),
@@ -108,14 +135,9 @@ func GenerateMachine(ic *types.InstallConfig, service capibm.ResourceIdentifier,
 			},
 		},
 		Spec: capibm.IBMPowerVSMachineSpec{
-			Workspace: service,
-			SSHKey:    "",
-			Image: capibm.IBMPowerVSMachineImage{
-				Type: capibm.ImageSourceTypeStockImage,
-				StockImage: capibm.ResourceIdentifier{
-					Name: image,
-				},
-			},
+			Workspace:     service,
+			SSHKey:        "",
+			Image:         machineImage,
 			SystemType:    mpool.SysType,
 			ProcessorType: capibm.PowerVSProcessorType(mpool.ProcType),
 			Processors:    mpool.Processors,

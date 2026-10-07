@@ -26,8 +26,14 @@ func MachineSets(clusterID string, config *types.InstallConfig, pool *types.Mach
 	mpool := pool.Platform.PowerVS
 	var network string
 
-	// Resolve the catalog image name from osImageStream (defaults to RHEL-CoreOS-9).
-	image := OSImageNameFromStream(config.OSImageStream)
+	// When both osImage and serviceInstanceGUID are specified in the install-config,
+	// use the caller-supplied image name directly; otherwise derive it from osImageStream.
+	var image string
+	if platform.OSImage != "" && platform.ServiceInstanceGUID != "" {
+		image = platform.OSImage
+	} else {
+		image = OSImageNameFromStream(config.OSImageStream)
+	}
 
 	total := int32(0)
 	if pool.Replicas != nil {
