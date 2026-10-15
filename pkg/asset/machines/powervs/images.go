@@ -20,3 +20,19 @@ func OSImageNameFromStream(stream types.OSImageStream) string {
 	}
 	return "RHEL-CoreOS-9"
 }
+
+// ImportedImageName returns the name of the IBMPowerVSImage resource (and the
+// resulting workspace image) created when platform.powervs.osImage is set.
+func ImportedImageName(clusterID string) string {
+	return fmt.Sprintf("rhcos-%s", clusterID)
+}
+
+// ImageName returns the image name to be used by machines: the imported image
+// when platform.powervs.osImage is set, otherwise the stock catalog image
+// matching osImageStream.
+func ImageName(clusterID string, config *types.InstallConfig) string {
+	if config.PowerVS.OSImage != "" {
+		return ImportedImageName(clusterID)
+	}
+	return OSImageNameFromStream(config.OSImageStream)
+}

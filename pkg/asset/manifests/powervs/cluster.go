@@ -311,14 +311,38 @@ func GenerateClusterAssets(installConfig *installconfig.InstallConfig, clusterID
 		Object: powerVSCluster,
 		File:   asset.File{Filename: "02_powervs-cluster.yaml"},
 	})
-	powerVSPlatform := installConfig.Config.Platform.PowerVS
-	var resolvedImage string
-	if powerVSPlatform.OSImage != "" && powerVSPlatform.ServiceInstanceGUID != "" {
-		resolvedImage = powerVSPlatform.OSImage
+	// When osImage is set, import the image from COS into the workspace; otherwise
+	// the machines use a stock catalog image and no image manifest is needed.
+	if osImage := installConfig.Config.Platform.PowerVS.OSImage; osImage != "" {
+		imageBucket, imageObject, imageRegion, err := powervstypes.ParseOSImageURL(osImage)
+		if err != nil {
+			return nil, fmt.Errorf("invalid platform.powervs.osImage %q: %w", osImage, err)
+		}
+		logrus.Infof("Importing PowerVS image from bucket %s, object %s, region %s", imageBucket, imageObject, imageRegion)
+
+		manifests = append(manifests, &asset.RuntimeFile{
+			Object: &capibm.IBMPowerVSImage{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: capibm.GroupVersion.String(),
+					Kind:       "IBMPowerVSImage",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      machinespowervs.ImportedImageName(clusterID.InfraID),
+					Namespace: capiutils.Namespace,
+				},
+				Spec: capibm.IBMPowerVSImageSpec{
+					ClusterName: clusterID.InfraID,
+					Workspace:   service,
+					Bucket:      imageBucket,
+					Object:      imageObject,
+					Region:      imageRegion,
+				},
+			},
+			File: asset.File{Filename: "03_powervs-image.yaml"},
+		})
 	} else {
-		resolvedImage = machinespowervs.OSImageNameFromStream(installConfig.Config.OSImageStream)
+		logrus.Infof("Using PowerVS stock image: %s", machinespowervs.OSImageNameFromStream(installConfig.Config.OSImageStream))
 	}
-	logrus.Infof("Using PowerVS image: %s", resolvedImage)
 
 	return &capiutils.GenerateClusterAssetsOutput{
 		Manifests: manifests,

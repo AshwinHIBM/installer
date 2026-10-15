@@ -29,14 +29,10 @@ func GenerateMachines(clusterID string, ic *types.InstallConfig, pool *types.Mac
 		total = *pool.Replicas
 	}
 
-	// When both osImage and serviceInstanceGUID are specified in the install-config,
-	// use the caller-supplied image name directly; otherwise derive it from osImageStream.
-	var image string
-	if ic.PowerVS.OSImage != "" && ic.PowerVS.ServiceInstanceGUID != "" {
-		image = ic.PowerVS.OSImage
-	} else {
-		image = OSImageNameFromStream(ic.OSImageStream)
-	}
+	// When osImage is specified in the install-config, the image is imported by the
+	// IBMPowerVSImage resource; otherwise a stock catalog image derived from osImageStream is used.
+	image := ImageName(clusterID, ic)
+	usingOSImage := ic.PowerVS.OSImage != ""
 
 	var (
 		result         []*asset.RuntimeFile
@@ -58,8 +54,6 @@ func GenerateMachines(clusterID string, ic *types.InstallConfig, pool *types.Mac
 			ID: ic.PowerVS.ServiceInstanceGUID,
 		}
 	}
-
-	usingOSImage := ic.PowerVS.OSImage != "" && ic.PowerVS.ServiceInstanceGUID != ""
 
 	for idx := int64(0); idx < total; idx++ {
 		name = fmt.Sprintf("%s-%s-%d", clusterID, pool.Name, idx)
@@ -102,15 +96,15 @@ func GenerateMachines(clusterID string, ic *types.InstallConfig, pool *types.Mac
 }
 
 // GenerateMachine creates a capibm.IBMPowerVSMachine struct.
-// When imageIsReference is true (i.e. image comes from platform.powervs.osImage), the image
-// is resolved as an existing workspace image via ImageSourceTypeReference; otherwise the
+// When imageIsImport is true (i.e. platform.powervs.osImage is set), the image is the
+// IBMPowerVSImage resource of that name, which imports the image from COS; otherwise the
 // catalog stock-image path is used.
-func GenerateMachine(ic *types.InstallConfig, service capibm.ResourceIdentifier, mpool *powervs.MachinePool, name string, image string, imageIsReference bool) *capibm.IBMPowerVSMachine {
+func GenerateMachine(ic *types.InstallConfig, service capibm.ResourceIdentifier, mpool *powervs.MachinePool, name string, image string, imageIsImport bool) *capibm.IBMPowerVSMachine {
 	var machineImage capibm.IBMPowerVSMachineImage
-	if imageIsReference {
+	if imageIsImport {
 		machineImage = capibm.IBMPowerVSMachineImage{
-			Type: capibm.ImageSourceTypeReference,
-			Reference: capibm.ResourceIdentifier{
+			Type: capibm.ImageSourceTypeImport,
+			Import: capibm.ImageReference{
 				Name: image,
 			},
 		}

@@ -52,10 +52,10 @@ type Platform struct {
 	// +optional
 	DefaultMachinePlatform *MachinePool `json:"defaultMachinePlatform,omitempty"`
 
-	// OSImage is the name of an existing image in the Power VS Workspace to use for
-	// cluster nodes.  When both OSImage and ServiceInstanceGUID are specified, this
-	// image name is used directly instead of deriving it from osImageStream.
-	// OSImage requires ServiceInstanceGUID to be set.
+	// OSImage is the IBM Cloud Object Storage URL of a Power VS image to import into the
+	// Power VS Workspace and use for cluster nodes, of the form
+	// https://s3.<region>.cloud-object-storage.appdomain.cloud/<bucket>/<object>.
+	// When unset, the stock catalog image matching osImageStream is used.
 	//
 	// +optional
 	OSImage string `json:"osImage,omitempty"`
